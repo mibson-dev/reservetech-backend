@@ -1,4 +1,4 @@
-package com.example.reservetech.security;
+package com.example.reservetech.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
