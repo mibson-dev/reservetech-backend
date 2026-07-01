@@ -1,0 +1,17 @@
+package com.example.reservetech.exceptions;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class ErroResponse {
+
+    private int status;
+    private String mensagem;
+    private LocalDateTime timestamp;
+}
