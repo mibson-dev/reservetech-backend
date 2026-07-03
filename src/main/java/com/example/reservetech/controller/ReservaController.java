@@ -4,6 +4,7 @@ package com.example.reservetech.controller;
 import com.example.reservetech.DTO.AtualizarStatusReservaDTO;
 import com.example.reservetech.DTO.ReservaRequestDTO;
 import com.example.reservetech.DTO.ReservaResponseDTO;
+import com.example.reservetech.DTO.ReservaUpdateDTO;
 import com.example.reservetech.model.StatusReserva;
 import com.example.reservetech.model.Usuario;
 import com.example.reservetech.services.ReservaService;
@@ -11,10 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,20 +54,19 @@ public class ReservaController {
         return ResponseEntity.ok(reservaService.listarTodas(pageable));
     }
 
-    @GetMapping("/usuario/{usuarioId}")
-    @PreAuthorize("hasRole('TI')")
-    public ResponseEntity<Page<ReservaResponseDTO>> listarPorUsuario(
-            @PathVariable Long usuarioId,
-            @PageableDefault(size = 10, sort = "dataReserva", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return ResponseEntity.ok(reservaService.listarPorUsuario(usuarioId, pageable));
-    }
-
     @PatchMapping("/{id}")
     public ResponseEntity<ReservaResponseDTO> atualizarStatus(
             @PathVariable Long id,
             @RequestBody @Valid AtualizarStatusReservaDTO dto
     ) {
         return ResponseEntity.ok(reservaService.atualizarStatus(id, dto.status()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservaResponseDTO> atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid ReservaUpdateDTO dto
+    ) {
+        return ResponseEntity.ok(reservaService.atualizar(id, dto));
     }
 }

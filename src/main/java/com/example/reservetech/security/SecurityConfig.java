@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,7 +19,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -37,8 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/usuarios/me").authenticated()
                         .requestMatchers("/usuarios/**").hasRole("TI")
+                        .requestMatchers(HttpMethod.GET, "/periodos/**").authenticated()
 
-                        // Dispositivos e Salas: TI gerencia (cria/edita/remove), todos podem consultar
                         .requestMatchers(HttpMethod.POST, "/dispositivos/**").hasRole("TI")
                         .requestMatchers(HttpMethod.PUT, "/dispositivos/**").hasRole("TI")
                         .requestMatchers(HttpMethod.DELETE, "/dispositivos/**").hasRole("TI")
@@ -46,13 +44,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/salas/**").hasRole("TI")
                         .requestMatchers(HttpMethod.DELETE, "/salas/**").hasRole("TI")
 
-                        // Reservas: qualquer usuário autenticado pode criar/consultar as próprias
                         .requestMatchers(HttpMethod.GET, "/dispositivos/**", "/salas/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/reservas").authenticated()
                         .requestMatchers(HttpMethod.GET, "/reservas/**").authenticated()
-
-                        // Aprovar/cancelar reservas de qualquer usuário: só TI
                         .requestMatchers(HttpMethod.PATCH, "/reservas/**").hasRole("TI")
+                        .requestMatchers(HttpMethod.PUT, "/reservas/**").hasRole("TI")
 
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

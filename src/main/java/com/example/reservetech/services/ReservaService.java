@@ -3,6 +3,7 @@ package com.example.reservetech.services;
 import com.example.reservetech.DTO.ItemReservaRequestDTO;
 import com.example.reservetech.DTO.ReservaRequestDTO;
 import com.example.reservetech.DTO.ReservaResponseDTO;
+import com.example.reservetech.DTO.ReservaUpdateDTO;
 import com.example.reservetech.exceptions.ConflitoDeHorarioException;
 import com.example.reservetech.exceptions.DispositivoNaoEncontradoException;
 import com.example.reservetech.exceptions.ReservaNaoEncontradaException;
@@ -52,7 +53,6 @@ public class ReservaService {
                 );
             }
         }
-
 
         Reserva reserva = new Reserva();
         reserva.setUsuario(usuarioLogado);
@@ -122,17 +122,57 @@ public class ReservaService {
                 .map(ReservaResponseDTO::new);
     }
 
-    // NOVO MÉTODO: Retorna reservas de um usuário específico, mapeado para DTO
-    public Page<ReservaResponseDTO> listarPorUsuario(Long usuarioId, Pageable pageable) {
-        return reservaRepository.findByUsuarioIdOrderByDataReservaDesc(usuarioId, pageable)
-                .map(ReservaResponseDTO::new);
-    }
-
     public ReservaResponseDTO atualizarStatus(Long id, StatusReserva novoStatus) {
         Reserva reserva = reservaRepository.findById(id)
                 .orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrada"));
 
         reserva.setStatus(novoStatus);
+        reservaRepository.save(reserva);
+        return new ReservaResponseDTO(reserva);
+    }
+
+    public ReservaResponseDTO atualizar(Long id, ReservaUpdateDTO dto) {
+        Reserva reserva = reservaRepository.findById(id)
+                .orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrada"));
+
+        for (ItemReservaRequestDTO itemDto : dto.itens()) {
+            Integer quantidadeJaReservada = reservaRepository.somarQuantidadeReservadaNoHorario(
+                    itemDto.dispositivoId(),
+                    dto.dataReserva(),
+                    dto.horarioInicio(),
+                    dto.horarioFim()
+            );
+
+            int quantidadePropria = reserva.getItens().stream()
+                    .filter(i -> i.getDispositivo().getId().equals(itemDto.dispositivoId()))
+                    .mapToInt(i -> i.getQuantidadeReservada())
+                    .sum();
+
+            int quantidadeRestante = buscarDispositivo(itemDto.dispositivoId()).getQuantidadeDisponivel()
+                    - (quantidadeJaReservada - quantidadePropria);
+
+            if (itemDto.quantidadeReservada() > quantidadeRestante) {
+                Dispositivo dispositivo = buscarDispositivo(itemDto.dispositivoId());
+                throw new ConflitoDeHorarioException(
+                        "O dispositivo '" + dispositivo.getNome() + "' não tem quantidade suficiente disponível nesse horário."
+                );
+            }
+        }
+
+        reserva.setSala(salaService.buscarEntidadePorId(dto.salaId()));
+        reserva.setDataReserva(dto.dataReserva());
+        reserva.setHorarioInicio(dto.horarioInicio());
+        reserva.setHorarioFim(dto.horarioFim());
+
+        reserva.getItens().clear();
+        for (ItemReservaRequestDTO itemDto : dto.itens()) {
+            ItemReserva item = new ItemReserva();
+            item.setReserva(reserva);
+            item.setDispositivo(buscarDispositivo(itemDto.dispositivoId()));
+            item.setQuantidadeReservada(itemDto.quantidadeReservada());
+            reserva.getItens().add(item);
+        }
+
         reservaRepository.save(reserva);
         return new ReservaResponseDTO(reserva);
     }
