@@ -78,6 +78,14 @@ public class ReservaController {
         return ResponseEntity.ok(reservaService.atualizarStatus(id, dto.status()));
     }
 
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<ReservaResponseDTO> cancelarPropriaReserva(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado
+    ) {
+        return ResponseEntity.ok(reservaService.cancelarPropriaReserva(id, usuarioLogado));
+    }
+
 
 
     @PutMapping("/{id}")

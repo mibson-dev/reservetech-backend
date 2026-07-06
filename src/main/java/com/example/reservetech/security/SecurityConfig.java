@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/dispositivos/**", "/salas/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/reservas").authenticated()
                         .requestMatchers(HttpMethod.GET, "/reservas/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/reservas/*/cancelar").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/reservas/**").hasRole("TI")
                         .requestMatchers(HttpMethod.PUT, "/reservas/**").hasRole("TI")
 

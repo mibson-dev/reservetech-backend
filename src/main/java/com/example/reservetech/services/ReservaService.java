@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,6 +186,44 @@ public class ReservaService {
 
         reservaRepository.save(reserva);
         return new ReservaResponseDTO(reserva);
+    }
+
+    public ReservaResponseDTO cancelarPropriaReserva(Long reservaId, Usuario usuarioLogado) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrada"));
+
+        if (!reserva.getUsuario().getId().equals(usuarioLogado.getId())) {
+            throw new ConflitoDeHorarioException("Você só pode cancelar suas próprias reservas.");
+        }
+
+        if (reserva.getStatus() == StatusReserva.CANCELADA) {
+            throw new ConflitoDeHorarioException("Esta reserva já está cancelada.");
+        }
+
+        LocalDateTime inicioReserva = LocalDateTime.of(reserva.getDataReserva(), reserva.getHorarioInicio());
+        if (LocalDateTime.now().isAfter(inicioReserva)) {
+            throw new ConflitoDeHorarioException("Não é possível cancelar uma reserva cujo horário já começou.");
+        }
+
+        reserva.setStatus(StatusReserva.CANCELADA);
+        reservaRepository.save(reserva);
+        return new ReservaResponseDTO(reserva);
+    }
+
+    public int expirarReservasPendentes() {
+        List<Reserva> pendentes = reservaRepository.findByStatus(StatusReserva.PENDENTE);
+        LocalDateTime agora = LocalDateTime.now();
+        int canceladas = 0;
+
+        for (Reserva reserva : pendentes) {
+            LocalDateTime inicioReserva = LocalDateTime.of(reserva.getDataReserva(), reserva.getHorarioInicio());
+            if (agora.isAfter(inicioReserva)) {
+                reserva.setStatus(StatusReserva.CANCELADA);
+                reservaRepository.save(reserva);
+                canceladas++;
+            }
+        }
+        return canceladas;
     }
 
     private Dispositivo buscarDispositivo(Long id) {
