@@ -122,6 +122,11 @@ public class ReservaService {
                 .map(ReservaResponseDTO::new);
     }
 
+    public Page<ReservaResponseDTO> listarPorData(LocalDate data, Pageable pageable) {
+        return reservaRepository.findByDataReserva(data, pageable)
+                .map(ReservaResponseDTO::new);
+    }
+
     public ReservaResponseDTO atualizarStatus(Long id, StatusReserva novoStatus) {
         Reserva reserva = reservaRepository.findById(id)
                 .orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrada"));

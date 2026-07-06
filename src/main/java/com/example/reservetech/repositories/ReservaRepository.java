@@ -23,6 +23,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     Page<Reserva> findByStatus(StatusReserva status, Pageable pageable);
 
+    Page<Reserva> findByDataReserva(LocalDate data, Pageable pageable);
+
     @Query("""
         SELECT COALESCE(SUM(i.quantidadeReservada), 0) FROM ItemReserva i
         WHERE i.dispositivo.id = :dispositivoId

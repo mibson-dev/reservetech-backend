@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/reservas")
 public class ReservaController {
@@ -46,8 +48,12 @@ public class ReservaController {
     @GetMapping
     public ResponseEntity<Page<ReservaResponseDTO>> listarTodas(
             @RequestParam(required = false) StatusReserva status,
+            @RequestParam(required = false) LocalDate data,
             Pageable pageable
     ) {
+        if (data != null) {
+            return ResponseEntity.ok(reservaService.listarPorData(data, pageable));
+        }
         if (status != null) {
             return ResponseEntity.ok(reservaService.listarPorStatus(status, pageable));
         }
@@ -61,6 +67,8 @@ public class ReservaController {
     ) {
         return ResponseEntity.ok(reservaService.atualizarStatus(id, dto.status()));
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<ReservaResponseDTO> atualizar(
