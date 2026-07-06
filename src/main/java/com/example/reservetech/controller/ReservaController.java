@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +59,15 @@ public class ReservaController {
             return ResponseEntity.ok(reservaService.listarPorStatus(status, pageable));
         }
         return ResponseEntity.ok(reservaService.listarTodas(pageable));
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('TI')")
+    public ResponseEntity<Page<ReservaResponseDTO>> listarPorUsuario(
+            @PathVariable Long usuarioId,
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(reservaService.listarPorUsuario(usuarioId, pageable));
     }
 
     @PatchMapping("/{id}")

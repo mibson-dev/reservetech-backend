@@ -117,6 +117,11 @@ public class ReservaService {
                 .map(ReservaResponseDTO::new);
     }
 
+    public Page<ReservaResponseDTO> listarPorUsuario(Long usuarioId, Pageable pageable) {
+        return reservaRepository.findByUsuarioIdOrderByDataReservaDesc(usuarioId, pageable)
+                .map(ReservaResponseDTO::new);
+    }
+
     public Page<ReservaResponseDTO> listarPorStatus(StatusReserva status, Pageable pageable) {
         return reservaRepository.findByStatus(status, pageable)
                 .map(ReservaResponseDTO::new);
